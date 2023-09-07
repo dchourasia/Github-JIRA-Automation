@@ -1,0 +1,38 @@
+{
+  "target_release": "rhods-1.33",
+  "previous_release": "rhods-1.32",
+  "upstream_org": "opendatahub-io",
+  "downstrean_org": "red-hat-data-services",
+  "components": [
+    {
+      "component_name": "Dashboard",
+      "jira_component": "UI",
+      "repos": ["odh-dashboard"]
+    },
+    {
+      "component_name": "Data Science Pipelines",
+      "jira_component": "Pipelines",
+      "repos": ["data-science-pipelines", "data-science-pipelines-operator"]
+    },
+    {
+      "component_name": "RHODS Operator",
+      "jira_component": "Install Upgrade Uninstall",
+      "repos": ["opendatahub-operator", "rhods-operator", "odh-manifests"]
+    },
+    {
+      "component_name": "Model Serving",
+      "jira_component": "Model Serving",
+      "repos": ["trustyai-explainability/trustyai-explainability", "trustyai-explainability/trustyai-service-operator", "kserve", "modelmesh-serving", "rest-proxy"]
+    },
+    {
+      "component_name": "Model Registry",
+      "jira_component": "Model Registry",
+      "repos": ["odh-model-controller", "modelmesh", "modelmesh-runtime-adapter"]
+    },
+    {
+      "component_name": "Workbenches",
+      "jira_component": "Workbenches",
+      "repos": ["kubeflow"]
+    }
+  ]
+}

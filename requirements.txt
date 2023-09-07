@@ -1,0 +1,4 @@
+PyGithub~=1.59.0
+jira~=3.5.2
+requests~=2.28.2
+beautifulsoup4~=4.12.2
