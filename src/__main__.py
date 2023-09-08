@@ -97,7 +97,7 @@ def fetch_prs(gh: Github,
 def fetch_issues(gh: Github,
               repos: List[Dict[str, str]],
               org: str,
-              labels_to_filter: List[str]):
+              labels_to_filter: List[str], commits_with_no_issue_ref:list, commits_directly_made_to_downstream:list):
     """
     Fetch all Github Issues associated with the commits between previous_release and
     target_release tags. If 2 commits are associated with a single pr,
@@ -115,17 +115,24 @@ def fetch_issues(gh: Github,
     """
     def filter_labels(label_name):
         return label_name in labels_to_filter
+
+    def process_upstream_pr(upstream_PR:PullRequest, repo_issues:list):
+        if upstream_PR.number not in upstream_repo_prs:
+            repo_issues += get_linked_issues(upstream_org, repo, upstream_PR, commits_with_no_issue_ref)
+            upstream_repo_prs.append(upstream_PR.number)
+
     issues = []
     for repo in repos:
-        repo_prs = []
+        downstream_repo_prs = []
+        upstream_repo_prs = []
         repo_issues = []
         upstream_org = 'opendatahub-io'
         previous_release = repo["previous_release"]
         target_release = repo["target_release"]
         downstream_repo = gh.get_organization(org).get_repo(repo["repo_name"])
         upstream_repo = gh.get_organization(upstream_org).get_repo(repo["repo_name"])
-        previous_commits = downstream_repo.get_commits(sha=previous_release, since=datetime.datetime.today() - datetime.timedelta(days=45))
-        current_commits = downstream_repo.get_commits(sha=target_release, since=datetime.datetime.today() - datetime.timedelta(days=30))
+        previous_commits = downstream_repo.get_commits(sha=previous_release, since=datetime.datetime.today() - datetime.timedelta(days=60))
+        current_commits = downstream_repo.get_commits(sha=target_release, since=datetime.datetime.today() - datetime.timedelta(days=45))
 
         target_commits = []
         for commit in current_commits:
@@ -133,11 +140,19 @@ def fetch_issues(gh: Github,
                 target_commits.append(commit)
             else:
                 break
-        for commit in target_commits:
-            PR = commit.get_pulls().get_page(0).pop()
-            if PR.number not in repo_prs:
-                repo_issues += get_linked_issues(upstream_org, repo, PR)
-                repo_prs.append(PR.number)
+        for downstream_commit in target_commits:
+            downstream_PR = downstream_commit.get_pulls().get_page(0).pop()
+            if get_github_org(downstream_PR.html_url) == upstream_org:
+                process_upstream_pr(downstream_PR, repo_issues)
+            elif downstream_PR.number not in downstream_repo_prs:
+                upstream_commits = downstream_PR.get_commits()
+                for upstream_commit in upstream_commits:
+                    if upstream_commit in target_commits:
+                        commits_directly_made_to_downstream.append(upstream_commit)
+                        continue
+                    upstream_PR = upstream_commit.get_pulls().get_page(0).pop()
+                    process_upstream_pr(upstream_PR, repo_issues)
+                downstream_repo_prs.append(downstream_PR.number)
         repo_issues = list(set(repo_issues))
         # repo_issues = [issue.split('/')[-1] for issue in repo_issues]
         # repo_issues = [upstream_repo.get_issue(issue) for issue in repo_issues]
@@ -145,17 +160,22 @@ def fetch_issues(gh: Github,
 
     return issues
 
-def get_linked_issues(upstream_org, repo, PR: PullRequest):
+def get_github_org(url:str):
+    return url.split('/')[3] if url else ''
+
+def get_linked_issues(upstream_org, repo, PR: PullRequest, commits_with_no_issue_ref:list):
     issues = []
-
-
     try:
-        r = requests.get(f"https://github.com/{upstream_org}/{repo['repo_name']}/pull/{PR.number}")
+        pr_url = f"https://github.com/{upstream_org}/{repo['repo_name']}/pull/{PR.number}"
+        r = requests.get(pr_url)
         soup = BeautifulSoup(r.text, 'html.parser')
         issueForm = soup.find("form", {"aria-label": re.compile('Link issues')})
         issues = [i["href"] for i in issueForm.find_all("a")]
+        if not issues:
+            commits_with_no_issue_ref.append(pr_url)
     except Exception as e:
         print(traceback.format_exc())
+
     return issues
 
 def submit_jira(jc: JIRA, downstream_release: str, project: str, summary: str, description: str,
@@ -235,6 +255,8 @@ def main():
     jira_token = args.jira_token
 
     auth = Auth.Token(gh_token)
+    commits_with_no_issue_ref = []
+    commits_directly_made_to_downstream = []
 
     gh = Github(auth=auth)
     jc = JIRA(token_auth=jira_token, server=jira_server)
@@ -247,23 +269,23 @@ def main():
         prs = cache_fetch(gh)
     else:
         # prs = fetch_prs(gh, repos, organization, labels_to_filter)
-        issues = fetch_issues(gh, repos, organization, labels_to_filter)
+        issues = fetch_issues(gh, repos, organization, labels_to_filter, commits_with_no_issue_ref, commits_directly_made_to_downstream)
 
     msg = build_msg_issues(issues)
     summary = "Github Issues for Component {0} for release {1}".format(component, target_release)
     print(msg)
 
-    new_jira = submit_jira(
-        jc=jc,
-        project=jira_project,
-        summary=summary,
-        description=msg,
-        issuetype=jira_issue_type,
-        labels=jira_labels,
-        priority=jira_priority,
-        downstream_release=target_release,
-    )
-    print(new_jira)
+    # new_jira = submit_jira(
+    #     jc=jc,
+    #     project=jira_project,
+    #     summary=summary,
+    #     description=msg,
+    #     issuetype=jira_issue_type,
+    #     labels=jira_labels,
+    #     priority=jira_priority,
+    #     downstream_release=target_release,
+    # )
+    # print(new_jira)
 
 if __name__ == "__main__":
     main()
