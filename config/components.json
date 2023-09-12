@@ -17,7 +17,7 @@
     {
       "component_name": "RHODS Operator",
       "jira_component": "Install Upgrade Uninstall",
-      "repos": ["opendatahub-operator", "rhods-operator", "odh-manifests"]
+      "repos": ["opendatahub-operator", "rhods-operator", "odh-manifests", "odh-deployer"]
     },
     {
       "component_name": "Model Serving",
@@ -33,6 +33,11 @@
       "component_name": "Workbenches",
       "jira_component": "Workbenches",
       "repos": ["kubeflow"]
+    },
+    {
+      "component_name": "Distributed Workloads",
+      "jira_component": "Distributed Workloads",
+      "repos": ["multi-cluster-app-dispatcher", "kuberay", "codeflare-operator"]
     }
   ]
 }
