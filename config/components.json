@@ -3,6 +3,12 @@
   "previous_release": "rhods-1.32",
   "upstream_org": "opendatahub-io",
   "downstrean_org": "red-hat-data-services",
+  "labels": "",
+  "jira_server": "https://issues.redhat.com/",
+  "jira_project": "RHODS",
+  "jira_labels": "eng,groomed",
+  "jira_issue_type": "Bug",
+  "jira_priority": "Normal",
   "components": [
     {
       "component_name": "Dashboard",
