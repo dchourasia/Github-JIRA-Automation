@@ -16,7 +16,7 @@ class ghj_config:
         self.jira_server = config["jira_server"]
         self.jira_project = config["jira_project"]
         self.jira_issue_type = config["jira_issue_type"]
-        self.jira_labels = config["jira_labels"]
+        self.jira_labels = config["jira_labels"].split(',')
         self.jira_priority = config["jira_priority"]
         self.jira_target_release = config["jira_target_release"]
 

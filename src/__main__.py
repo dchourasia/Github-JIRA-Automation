@@ -201,8 +201,8 @@ def submit_jira(jc: JIRA, downstream_release: str, project: str, summary: str, d
         'issuetype': {'name': issuetype},
         'labels': labels,
         'priority': {'name': priority},
-        'components': [jira_component],
-        'customfield_12311240': downstream_release
+        'components': [{'name': jira_component}],
+        'customfield_12311240': {'id': downstream_release}
     }
 
     new_issue = jc.create_issue(fields=issue_dict)
@@ -251,7 +251,7 @@ def main():
 
     config = ghj_config(args.config, args.gh_token, args.jira_token)
     commits_with_no_issue_ref, commits_without_pr, commits_directly_made_to_downstream, filter_label_issues = defaultdict(list), defaultdict(list), defaultdict(list), defaultdict(list)
-
+    jiras_reported = []
     extract_issues_with_filter_labels(config, filter_label_issues)
     for component in config.components:
         component_name = component["component_name"]
@@ -274,12 +274,15 @@ def main():
                 downstream_release=config.jira_target_release,
                 jira_component=jira_component
             )
-            print(new_jira)
+            print(f'Created https://issues.redhat.com/browse/{new_jira} for component {jira_component}')
+            jiras_reported.append(f'https://issues.redhat.com/browse/{new_jira}')
+
         else:
             print('not enough github issues found for component {0} for release {1}'.format(component_name, config.target_release))
     print('commits_with_no_issue_ref', commits_with_no_issue_ref)
     print('commits_without_pr', commits_without_pr)
     print('commits_directly_made_to_downstream', commits_directly_made_to_downstream)
+    print('jiras_reported - ', jiras_reported)
 
 
 

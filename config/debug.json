@@ -46,12 +46,6 @@
       "jira_component": "Distributed Workloads",
       "cpaas_repos": ["project-codeflare/multi-cluster-app-dispatcher", "kuberay", "project-codeflare/codeflare-operator"],
       "non_cpaas_repos": []
-    },
-    {
-      "component_name": "Documentation",
-      "jira_component": "Documentation",
-      "cpaas_repos": [],
-      "non_cpaas_repos": ["opendatahub-documentation"]
     }
   ]
 }
