@@ -263,19 +263,19 @@ def main():
             msg = build_msg_issues(issues)
             summary = "Github Issues for Component {0} for release {1}".format(component_name, config.target_release)
             print(summary, msg)
-            new_jira = submit_jira(
-                jc=config.jc,
-                project=config.jira_project,
-                summary=summary,
-                description=msg,
-                issuetype=config.jira_issue_type,
-                labels=config.jira_labels,
-                priority=config.jira_priority,
-                downstream_release=config.jira_target_release,
-                jira_component=jira_component
-            )
-            print(f'Created https://issues.redhat.com/browse/{new_jira} for component {jira_component}')
-            jiras_reported.append(f'https://issues.redhat.com/browse/{new_jira}')
+            # new_jira = submit_jira(
+            #     jc=config.jc,
+            #     project=config.jira_project,
+            #     summary=summary,
+            #     description=msg,
+            #     issuetype=config.jira_issue_type,
+            #     labels=config.jira_labels,
+            #     priority=config.jira_priority,
+            #     downstream_release=config.jira_target_release,
+            #     jira_component=jira_component
+            # )
+            # print(f'Created https://issues.redhat.com/browse/{new_jira} for component {jira_component}')
+            # jiras_reported.append(f'https://issues.redhat.com/browse/{new_jira}')
 
         else:
             print('not enough github issues found for component {0} for release {1}'.format(component_name, config.target_release))
