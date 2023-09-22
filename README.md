@@ -17,6 +17,7 @@ If any of the above is true for a github issue, it will be detected by the Githu
 Workflow
 ----------
 * The tool is run on-demand using this [github-action](https://github.com/dchourasia/Github-JIRA-Automation/actions/workflows/githb-jira-automation.yaml) after code-freeze
+* Entire workflow is run based on the configuration from [config yaml](https://github.com/dchourasia/Github-JIRA-Automation/blob/main/config/components.json)
 * We compare the commits of current release branch with previous release branch and eliminate older ones to derive the commits which are unique to the current release
 * These commits are correlated back to upstream commits/PRs, which in-turn are searched for linked github issues
 * The scrapping logic is not branch dependent, we find the PR associated with the downstream commit and see if it's an upstream PR, if not we look if PR has any related upstream commits, if yes we scrap them to find the upstream PR, which in-turn gives us linked issues. So essentially if you have a manual commit which was only made to downstream, then we need to skip such commits. Also if you missed to link the github issue with PR then also the automation cannot find the issue
