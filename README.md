@@ -23,7 +23,7 @@ Workflow
 * We also explore and add github issues which have a label like *rhods-X.Y* 
 * This automation creates one Jira per component based on this [config yaml](https://github.com/dchourasia/Github-JIRA-Automation/blob/main/config/components.json) 
 
-miscellaneous
+Miscellaneous
 ----------
 * No dependency on github-releases
 * No requirement to have a strict one to one mapping between upstream and downstream releases
