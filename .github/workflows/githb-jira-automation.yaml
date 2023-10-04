@@ -2,6 +2,12 @@ name: Github JIRA Automation
 run-name: Github JIRA Automation
 on:
   workflow_dispatch:
+    inputs:
+      dry_run:
+        type: boolean
+        description: 'Dry Run'
+        required: true
+        default: True
 
 jobs:
   github-to-jira:
@@ -22,4 +28,4 @@ jobs:
           JIRA_TOKEN: ${{ secrets.GTJ_JIRA_TOKEN }}
           CONFIG: config/components.json
         run: |
-          python src
+          python src --dry_run ${{ github.event.inputs.dry_run }}

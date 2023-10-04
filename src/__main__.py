@@ -154,6 +154,7 @@ def fetch_issues(config:ghj_config, component:dict, commits_with_no_issue_ref:de
                     if get_github_org(downstream_PR.html_url) == upstream_org:
                         process_upstream_pr(upstream_org, downstream_PR, repo_issues, repo)
                     elif downstream_PR.number not in downstream_repo_prs:
+                        process_upstream_pr(downstream_org, downstream_PR, repo_issues, repo)
                         upstream_commits = downstream_PR.get_commits()
                         for upstream_commit in upstream_commits:
                             if upstream_commit in target_commits:
@@ -191,22 +192,31 @@ def get_linked_issues(upstream_org, repo, PR: PullRequest, commits_with_no_issue
 
     return issues
 
-def submit_jira(jc: JIRA, downstream_release: str, project: str, summary: str, description: str,
-                issuetype: str, labels: str, priority: str, jira_component: str):
+def handle_jira_processing(config:ghj_config, jira_component, msg, summary):
+    jira_issue = None
+    if summary not in config.existing_jiras:
+        issue_dict = {
+            'project': {'key': config.jira_project},
+            'summary': summary,
+            'fixVersions': [config.jira_target_release.name],
+            'description': msg,
+            'issuetype': {'name': config.jira_issue_type},
+            'labels': config.jira_labels,
+            'priority': {'name': config.jira_priority},
+            'components': [{'name': jira_component}],
+            'customfield_12311240': {'id': config.jira_target_release.id}
+        }
 
-    issue_dict = {
-        'project': {'key': project},
-        'summary': summary,
-        'description': description,
-        'issuetype': {'name': issuetype},
-        'labels': labels,
-        'priority': {'name': priority},
-        'components': [{'name': jira_component}],
-        'customfield_12311240': {'id': downstream_release}
-    }
+        # jira_issue = config.jc.create_issue(fields=issue_dict)
+    else:
+        issue_dict = {
+            'description': msg
+        }
+        existing_jira = config.existing_jiras[summary]
+        # existing_jira.update(fields=issue_dict)
+        jira_issue = existing_jira.key
+    return jira_issue
 
-    new_issue = jc.create_issue(fields=issue_dict)
-    return new_issue
 
 
 def parse_arguments():
@@ -214,10 +224,9 @@ def parse_arguments():
         description="Create a Jira Issue from a GitHub tag release."
     )
 
-    parser.add_argument("--dev", dest="dev",
+    parser.add_argument("--dry_run", dest="dry_run",
                         action="store_true",
-                        help="Use this flag to store gh data in cache after first run. This will "
-                             "reduce the number of api calls made to the GH api in consecutive runs.", required=False)
+                        help="Use this flag to run the program in dry-run mode, means it will not create any Jiras", required=False, default=True)
 
     parser.add_argument("--config", dest="config",
                         help="A JSON config ]",
@@ -250,6 +259,7 @@ def main():
     args = parse_arguments()
 
     config = ghj_config(args.config, args.gh_token, args.jira_token)
+
     commits_with_no_issue_ref, commits_without_pr, commits_directly_made_to_downstream, filter_label_issues = defaultdict(list), defaultdict(list), defaultdict(list), defaultdict(list)
     jiras_reported = []
     extract_issues_with_filter_labels(config, filter_label_issues)
@@ -261,28 +271,20 @@ def main():
         issues = list(set(issues + filter_label_issues[component["component_name"]]))
         if issues:
             msg = build_msg_issues(issues)
-            summary = "Github Issues for Component {0} for release {1}".format(component_name, config.target_release)
+            summary = config.jira_issue_title.format(component_name, config.target_release)
             print(summary, msg)
-            new_jira = submit_jira(
-                jc=config.jc,
-                project=config.jira_project,
-                summary=summary,
-                description=msg,
-                issuetype=config.jira_issue_type,
-                labels=config.jira_labels,
-                priority=config.jira_priority,
-                downstream_release=config.jira_target_release,
-                jira_component=jira_component
-            )
-            print(f'Created https://issues.redhat.com/browse/{new_jira} for component {jira_component}')
-            jiras_reported.append(f'https://issues.redhat.com/browse/{new_jira}')
+            print(args.dry_run, type(args.dry_run))
+            # if not args.dry_run:
+            # jira_issue = handle_jira_processing(config, jira_component, msg, summary)
+            # print(f'Created https://issues.redhat.com/browse/{jira_issue} for component {jira_component}')
+            # jiras_reported.append(f'https://issues.redhat.com/browse/{jira_issue}')
 
         else:
             print('not enough github issues found for component {0} for release {1}'.format(component_name, config.target_release))
     print('commits_with_no_issue_ref', commits_with_no_issue_ref)
     print('commits_without_pr', commits_without_pr)
     print('commits_directly_made_to_downstream', commits_directly_made_to_downstream)
-    print('jiras_reported - ', jiras_reported)
+    print('jiras reported/updatd - ', jiras_reported)
 
 
 

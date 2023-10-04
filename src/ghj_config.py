@@ -19,9 +19,21 @@ class ghj_config:
         self.jira_labels = config["jira_labels"].split(',')
         self.jira_priority = config["jira_priority"]
         self.jira_target_release = config["jira_target_release"]
+        self.jira_issue_title = 'Github Issues for Component {0} for release {1}'
 
         self.components = config["components"]
         auth = Auth.Token(gh_token)
 
         self.gh = Github(auth=auth)
         self.jc = JIRA(token_auth=jira_token, server=self.jira_server)
+        self.jira_target_release = self.jc.get_project_version_by_name(project='RHODS', version_name=self.jira_target_release)
+        self.existing_jiras = self.get_existing_jiras()
+        self.existing_jiras = {jira.fields.summary:jira for jira in self.existing_jiras}
+        # users = self.jc.search_users(query='.')
+        a=1
+
+
+
+    def get_existing_jiras(self):
+        jiras = self.jc.search_issues(jql_str=f'project = "Red Hat OpenShift Data Science" and summary ~ "{self.jira_issue_title.format("*", self.target_release)}"')
+        return jiras

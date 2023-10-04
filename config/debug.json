@@ -9,7 +9,7 @@
   "jira_labels": "eng,groomed",
   "jira_issue_type": "Bug",
   "jira_priority": "Normal",
-  "jira_target_release": "12408177",
+  "jira_target_release": "RHODS_1.33.0_GA",
   "components": [
     {
       "component_name": "Dashboard",
