@@ -226,7 +226,7 @@ def parse_arguments():
 
     parser.add_argument("--dry_run", dest="dry_run",
                         action="store_true",
-                        help="Use this flag to run the program in dry-run mode, means it will not create any Jiras", required=False, default=True)
+                        help="Use this flag to run the program in dry-run mode, means it will not create any Jiras", required=False, default="false")
 
     parser.add_argument("--config", dest="config",
                         help="A JSON config ]",
