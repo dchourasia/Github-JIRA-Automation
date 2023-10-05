@@ -44,7 +44,7 @@ def build_msg_issues(issues: list, issue_titles:dict):
     body = ''
     for issue in issues:
         if issue in issue_titles:
-            body += f"# [{issue} | {issue_titles[issue]}] \n"
+            body += f"# [{issue_titles[issue]} | {issue}] \n"
         else:
             body += f"# {issue} \n"
 
@@ -290,19 +290,19 @@ def main():
             print(summary, msg)
             # print(args.dry_run, type(args.dry_run))
             if not args.dry_run:
-                print('Dry run disabled')
-                # jira_issue = handle_jira_processing(config, jira_component, msg, summary)
-                # print(f'Created https://issues.redhat.com/browse/{jira_issue} for component {jira_component}')
-                # jiras_reported.append(f'https://issues.redhat.com/browse/{jira_issue}')
-            else:
-                print('Dry run enabled')
+                jira_issue = handle_jira_processing(config, jira_component, msg, summary)
+                print(f'Created https://issues.redhat.com/browse/{jira_issue} for component {jira_component}')
+                jiras_reported.append(f'https://issues.redhat.com/browse/{jira_issue}')
 
         else:
             print('not enough github issues found for component {0} for release {1}'.format(component_name, config.target_release))
     print('commits_with_no_issue_ref', commits_with_no_issue_ref)
     print('commits_without_pr', commits_without_pr)
     print('commits_directly_made_to_downstream', commits_directly_made_to_downstream)
-    print('jiras reported/updatd - ', jiras_reported)
+    if not args.dry_run:
+        print('jiras reported/updated - ', jiras_reported)
+    else:
+        print('Dry-run enabled, no jira tickets created/updated.')
     print('Issues found for missing repos', filter_label_issues['Missing_Repos'])
 
 
