@@ -29,6 +29,7 @@ class ghj_config:
         self.jira_target_release = self.jc.get_project_version_by_name(project='RHODS', version_name=self.jira_target_release)
         self.existing_jiras = self.get_existing_jiras()
         self.existing_jiras = {jira.fields.summary:jira for jira in self.existing_jiras}
+
         # users = self.jc.search_users(query='.')
         a=1
 

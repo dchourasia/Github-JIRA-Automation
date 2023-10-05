@@ -38,12 +38,15 @@ def build_msg_prs(prs: List[Dict[str, Union[Repository.Repository, str, PullRequ
     body += "This issue was auto generated."
     return body
 
-def build_msg_issues(issues: list):
+def build_msg_issues(issues: list, issue_titles:dict):
     # header = "Changes introduced for component {0}".format(repo_name)
     # sub_header = "Changes are between upstream tags {0}...{1}".format(previous_release, target_release)
     body = ''
     for issue in issues:
-        body += f"* {issue} \n"
+        if issue in issue_titles:
+            body += f"# [{issue} | {issue_titles[issue]}] \n"
+        else:
+            body += f"# {issue} \n"
 
     return body
 def fetch_prs(gh: Github,
@@ -95,7 +98,7 @@ def fetch_prs(gh: Github,
 
 
 
-def fetch_issues(config:ghj_config, component:dict, commits_with_no_issue_ref:defaultdict(list), commits_without_pr:defaultdict(list), commits_directly_made_to_downstream:defaultdict(list)):
+def fetch_issues(config:ghj_config, component:dict, commits_with_no_issue_ref:defaultdict(list), commits_without_pr:defaultdict(list), commits_directly_made_to_downstream:defaultdict(list), issue_titles:dict):
     """
     Fetch all Github Issues associated with the commits between previous_release and
     target_release tags. If 2 commits are associated with a single pr,
@@ -122,7 +125,7 @@ def fetch_issues(config:ghj_config, component:dict, commits_with_no_issue_ref:de
 
     def process_upstream_pr(upstream_org, upstream_PR:PullRequest, repo_issues:list, repo:str):
         if upstream_PR.number not in upstream_repo_prs:
-            repo_issues += get_linked_issues(upstream_org, repo, upstream_PR, commits_with_no_issue_ref)
+            repo_issues += get_linked_issues(upstream_org, repo, upstream_PR, commits_with_no_issue_ref, issue_titles)
             upstream_repo_prs.append(upstream_PR.number)
 
     issues = []
@@ -177,7 +180,7 @@ def fetch_issues(config:ghj_config, component:dict, commits_with_no_issue_ref:de
 def get_github_org(url:str):
     return url.split('/')[3] if url else ''
 
-def get_linked_issues(upstream_org, repo, PR: PullRequest, commits_with_no_issue_ref:defaultdict(list)):
+def get_linked_issues(upstream_org, repo, PR: PullRequest, commits_with_no_issue_ref:defaultdict(list), issue_titles:dict):
     issues = []
     try:
         pr_url = f"https://github.com/{upstream_org}/{repo}/pull/{PR.number}"
@@ -185,6 +188,16 @@ def get_linked_issues(upstream_org, repo, PR: PullRequest, commits_with_no_issue
         soup = BeautifulSoup(r.text, 'html.parser')
         issueForm = soup.find("form", {"aria-label": re.compile('Link issues')})
         issues = [i["href"] for i in issueForm.find_all("a")]
+        # //bdi[contains(@class, 'js-issue-title')]
+        for issue in issues:
+            if issue not in issue_titles:
+                try:
+                    r = requests.get(issue)
+                    soup = BeautifulSoup(r.text, 'html.parser')
+                    issue_title = soup.find('bdi', {'class': 'js-issue-title'}).text
+                    issue_titles[issue] = issue_title
+                except Exception as e:
+                    print(traceback.format_exc())
         if not issues:
             commits_with_no_issue_ref[repo].append(pr_url)
     except Exception as e:
@@ -226,7 +239,7 @@ def parse_arguments():
 
     parser.add_argument("--dry_run", dest="dry_run",
                         action="store",
-                        help="Use this flag to run the program in dry-run mode, means it will not create any Jiras", required=False, default="false")
+                        help="Use this flag to run the program in dry-run mode, means it will not create any Jiras", required=False, default="true")
 
     parser.add_argument("--config", dest="config",
                         help="A JSON config ]",
@@ -241,7 +254,7 @@ def parse_arguments():
     args = parser.parse_args()
 
     return args
-def extract_issues_with_filter_labels(config:Github, filter_label_issues:defaultdict(list)):
+def extract_issues_with_filter_labels(config:Github, filter_label_issues:defaultdict(list), issue_titles:dict):
     issues = []
     upstream_orgs = [config.upstream_org]
     upstream_orgs += list(set([repo.split('/')[0] for component in config.components for repo in component["cpaas_repos"] + component["non_cpaas_repos"] if '/' in repo]))
@@ -250,6 +263,7 @@ def extract_issues_with_filter_labels(config:Github, filter_label_issues:default
     # component_repos = {component["component_name"]:list(set(component["cpaas_repos"] + component["non_cpaas_repos"])) for component in config.components}
     repos_component = {(repo if '/' not in repo else repo.split('/')[1]):component["component_name"] for component in config.components for repo in list(set(component["cpaas_repos"] + component["non_cpaas_repos"]))}
     for issue in issues:
+        issue_titles[issue.html_url] = issue.title
         if issue.repository.name in repos_component:
             filter_label_issues[repos_component[issue.repository.name]].append(issue.html_url)
         else:
@@ -257,27 +271,31 @@ def extract_issues_with_filter_labels(config:Github, filter_label_issues:default
 
 def main():
     args = parse_arguments()
-
+    args.dry_run = False if args.dry_run == "false" else True
     config = ghj_config(args.config, args.gh_token, args.jira_token)
 
     commits_with_no_issue_ref, commits_without_pr, commits_directly_made_to_downstream, filter_label_issues = defaultdict(list), defaultdict(list), defaultdict(list), defaultdict(list)
+    issue_titles = {}
     jiras_reported = []
-    extract_issues_with_filter_labels(config, filter_label_issues)
+    extract_issues_with_filter_labels(config, filter_label_issues, issue_titles)
     for component in config.components:
         component_name = component["component_name"]
         jira_component = component["jira_component"]
         print(f'******************* Starting Component {component_name} *******************')
-        issues = fetch_issues(config, component, commits_with_no_issue_ref, commits_without_pr, commits_directly_made_to_downstream)
+        issues = fetch_issues(config, component, commits_with_no_issue_ref, commits_without_pr, commits_directly_made_to_downstream, issue_titles)
         issues = list(set(issues + filter_label_issues[component["component_name"]]))
         if issues:
-            msg = build_msg_issues(issues)
+            msg = build_msg_issues(issues, issue_titles)
             summary = config.jira_issue_title.format(component_name, config.target_release)
             print(summary, msg)
-            print(args.dry_run, type(args.dry_run))
-            # if not args.dry_run:
-            # jira_issue = handle_jira_processing(config, jira_component, msg, summary)
-            # print(f'Created https://issues.redhat.com/browse/{jira_issue} for component {jira_component}')
-            # jiras_reported.append(f'https://issues.redhat.com/browse/{jira_issue}')
+            # print(args.dry_run, type(args.dry_run))
+            if not args.dry_run:
+                print('Dry run disabled')
+                # jira_issue = handle_jira_processing(config, jira_component, msg, summary)
+                # print(f'Created https://issues.redhat.com/browse/{jira_issue} for component {jira_component}')
+                # jiras_reported.append(f'https://issues.redhat.com/browse/{jira_issue}')
+            else:
+                print('Dry run enabled')
 
         else:
             print('not enough github issues found for component {0} for release {1}'.format(component_name, config.target_release))
@@ -285,6 +303,7 @@ def main():
     print('commits_without_pr', commits_without_pr)
     print('commits_directly_made_to_downstream', commits_directly_made_to_downstream)
     print('jiras reported/updatd - ', jiras_reported)
+    print('Issues found for missing repos', filter_label_issues['Missing_Repos'])
 
 
 

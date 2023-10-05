@@ -5,7 +5,7 @@ on:
     inputs:
       dry_run:
         type: boolean
-        description: 'Dry Run'
+        description: 'Dry-Run'
         required: true
         default: True
 
