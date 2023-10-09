@@ -187,7 +187,8 @@ def get_linked_issues(upstream_org, repo, PR: PullRequest, commits_with_no_issue
         r = requests.get(pr_url)
         soup = BeautifulSoup(r.text, 'html.parser')
         issueForm = soup.find("form", {"aria-label": re.compile('Link issues')})
-        issues = [i["href"] for i in issueForm.find_all("a")]
+        if issueForm:
+            issues = [i["href"] for i in issueForm.find_all("a")]
         # //bdi[contains(@class, 'js-issue-title')]
         for issue in issues:
             if issue not in issue_titles:
