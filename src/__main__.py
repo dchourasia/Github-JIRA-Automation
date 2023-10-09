@@ -213,7 +213,7 @@ def handle_jira_processing(config:ghj_config, jira_component, msg, summary):
         issue_dict = {
             'project': {'key': config.jira_project},
             'summary': summary,
-            'fixVersions': [config.jira_target_release.name],
+            'fixVersions': [{"name": config.jira_target_release.name}],
             'description': msg,
             'issuetype': {'name': config.jira_issue_type},
             'labels': config.jira_labels,
