@@ -222,7 +222,7 @@ def handle_jira_processing(config:ghj_config, jira_component, msg, summary):
             'customfield_12311240': {'id': config.jira_target_release.id}
         }
 
-        # jira_issue = config.jc.create_issue(fields=issue_dict)
+        jira_issue = config.jc.create_issue(fields=issue_dict)
     else:
         issue_dict = {
             'description': msg
