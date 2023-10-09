@@ -40,8 +40,8 @@
     {
       "component_name": "Workbenches",
       "jira_component": "Workbenches",
-      "cpaas_repos": ["kubeflow"],
-      "non_cpaas_repos": ["notebooks", "s2i-minimal-notebook", "s2i-minimal-notebook-anaconda"]
+      "cpaas_repos": ["notebooks", "kubeflow"],
+      "non_cpaas_repos": ["s2i-minimal-notebook", "s2i-minimal-notebook-anaconda"]
     },
     {
       "component_name": "Distributed Workloads",
