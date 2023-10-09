@@ -182,8 +182,8 @@ def get_github_org(url:str):
 
 def get_linked_issues(upstream_org, repo, PR: PullRequest, commits_with_no_issue_ref:defaultdict(list), issue_titles:dict):
     issues = []
+    pr_url = f"https://github.com/{upstream_org}/{repo}/pull/{PR.number}"
     try:
-        pr_url = f"https://github.com/{upstream_org}/{repo}/pull/{PR.number}"
         r = requests.get(pr_url)
         soup = BeautifulSoup(r.text, 'html.parser')
         issueForm = soup.find("form", {"aria-label": re.compile('Link issues')})
@@ -201,6 +201,7 @@ def get_linked_issues(upstream_org, repo, PR: PullRequest, commits_with_no_issue
         if not issues:
             commits_with_no_issue_ref[repo].append(pr_url)
     except Exception as e:
+        print('Exception while getting issues for PR ', pr_url)
         print(traceback.format_exc())
 
     return issues
