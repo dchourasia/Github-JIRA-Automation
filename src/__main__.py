@@ -44,7 +44,7 @@ def build_msg_issues(issues: list, issue_titles:dict):
     body = ''
     for issue in issues:
         if issue in issue_titles:
-            body += f"# [{issue_titles[issue]} | {issue}] \n"
+            body += f"# [ {issue_titles[issue]} | {issue} ] \n"
         else:
             body += f"# {issue} \n"
 
@@ -228,7 +228,7 @@ def handle_jira_processing(config:ghj_config, jira_component, msg, summary):
             'description': msg
         }
         existing_jira = config.existing_jiras[summary]
-        # existing_jira.update(fields=issue_dict)
+        existing_jira.update(fields=issue_dict)
         jira_issue = existing_jira.key
     return jira_issue
 
