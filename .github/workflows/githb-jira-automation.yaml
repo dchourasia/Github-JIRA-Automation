@@ -26,6 +26,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GTJ_GH_TOKEN }}
           JIRA_TOKEN: ${{ secrets.GTJ_JIRA_TOKEN }}
-          CONFIG: config/components.json
+          CONFIG: config/debug.json
         run: |
           python src --dry_run ${{ github.event.inputs.dry_run }}

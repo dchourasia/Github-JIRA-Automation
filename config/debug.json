@@ -1,51 +1,23 @@
 {
-  "target_release": "rhods-1.33",
-  "previous_release": "rhods-1.32",
+  "target_release": "rhods-1.34",
+  "previous_release": "rhods-1.33",
   "upstream_org": "opendatahub-io",
   "downstream_org": "red-hat-data-services",
-  "filter_labels": "rhods-1.33",
+  "filter_labels": "rhods-1.34",
   "jira_server": "https://issues.redhat.com/",
   "jira_project": "RHODS",
   "jira_labels": "eng,groomed",
   "jira_issue_type": "Bug",
   "jira_priority": "Normal",
-  "jira_target_release": "RHODS_1.33.0_GA",
+  "jira_target_release": "RHODS_1.34.0_GA",
   "components": [
     {
       "component_name": "Dashboard",
       "jira_component": "UI",
       "cpaas_repos": ["odh-dashboard"],
-      "non_cpaas_repos": []
-    },
-    {
-      "component_name": "Data Science Pipelines",
-      "jira_component": "Pipelines",
-      "cpaas_repos": ["data-science-pipelines", "data-science-pipelines-operator"],
-      "non_cpaas_repos": [""]
-    },
-    {
-      "component_name": "RHODS Operator",
-      "jira_component": "Install Upgrade Uninstall",
-      "cpaas_repos": ["opendatahub-operator"],
-      "non_cpaas_repos": []
-    },
-    {
-      "component_name": "Model Serving",
-      "jira_component": "Model Serving",
-      "cpaas_repos": ["trustyai-explainability/trustyai-explainability", "trustyai-explainability/trustyai-service-operator", "kserve", "modelmesh-serving", "rest-proxy", "odh-model-controller", "modelmesh", "modelmesh-runtime-adapter"],
-      "non_cpaas_repos": ["caikit-tgis-backend", "caikit", "caikit-nlp", "text-generation-inference", "openvinotoolkit/model_server"]
-    },
-    {
-      "component_name": "Workbenches",
-      "jira_component": "Workbenches",
-      "cpaas_repos": ["kubeflow"],
-      "non_cpaas_repos": ["notebooks", "s2i-minimal-notebook", "s2i-minimal-notebook-anaconda"]
-    },
-    {
-      "component_name": "Distributed Workloads",
-      "jira_component": "Distributed Workloads",
-      "cpaas_repos": ["project-codeflare/multi-cluster-app-dispatcher", "kuberay", "project-codeflare/codeflare-operator"],
-      "non_cpaas_repos": []
+      "non_cpaas_repos": [],
+      "jira_assignee": "",
+      "jira_watchers": []
     }
   ]
 }
