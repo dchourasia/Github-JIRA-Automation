@@ -44,7 +44,7 @@ def build_msg_issues(issues: list, issue_titles:dict):
     body = ''
     for issue in issues:
         if issue in issue_titles:
-            body += f"# [ {issue_titles[issue]} | {issue} ] \n"
+            body += f"# [{issue_titles[issue]} | {issue}] \n"
         else:
             body += f"# {issue} \n"
 
