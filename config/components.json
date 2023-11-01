@@ -7,7 +7,7 @@
   "jira_server": "https://issues.redhat.com/",
   "jira_project": "RHODS",
   "jira_labels": "eng,groomed",
-  "jira_issue_type": "Bug",
+  "jira_issue_type": "Story",
   "jira_priority": "Normal",
   "jira_target_release": "RHODS_2.4.0_GA",
   "components": [
