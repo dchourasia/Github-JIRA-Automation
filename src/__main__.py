@@ -273,6 +273,7 @@ def extract_issues_with_filter_labels(config:Github, filter_label_issues:default
 
 def main():
     args = parse_arguments()
+    use_commit_scrapping = False
     args.dry_run = False if args.dry_run == "false" else True
     config = ghj_config(args.config, args.gh_token, args.jira_token)
 
@@ -284,7 +285,9 @@ def main():
         component_name = component["component_name"]
         jira_component = component["jira_component"]
         print(f'******************* Starting Component {component_name} *******************')
-        issues = fetch_issues(config, component, commits_with_no_issue_ref, commits_without_pr, commits_directly_made_to_downstream, issue_titles)
+        issues = []
+        if use_commit_scrapping:
+            issues = fetch_issues(config, component, commits_with_no_issue_ref, commits_without_pr, commits_directly_made_to_downstream, issue_titles)
         issues = list(set(issues + filter_label_issues[component["component_name"]]))
         if issues:
             msg = build_msg_issues(issues, issue_titles)

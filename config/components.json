@@ -1,15 +1,15 @@
 {
-  "target_release": "rhods-2.4",
-  "previous_release": "rhods-1.34",
+  "target_release": "rhods-2.5",
+  "previous_release": "rhods-2.4",
   "upstream_org": "opendatahub-io",
   "downstream_org": "red-hat-data-services",
-  "filter_labels": "rhods-2.4",
+  "filter_labels": "rhods-2.5",
   "jira_server": "https://issues.redhat.com/",
   "jira_project": "RHODS",
   "jira_labels": "eng,groomed",
   "jira_issue_type": "Story",
   "jira_priority": "Normal",
-  "jira_target_release": "RHODS_2.4.0_GA",
+  "jira_target_release": "RHODS_2.5.0_GA",
   "components": [
     {
       "component_name": "Dashboard",
